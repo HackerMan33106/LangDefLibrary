@@ -1,0 +1,303 @@
+=====================================================
+             ДОКУМЕНТАЦИЯ LANGDEFLIB
+=====================================================
+
+ПРОСТОЕ ОПРЕДЕЛЕНИЕ ЯЗЫКА ТЕКСТА ДЛЯ PYTHON
+-----------------------------------------------------
+
+LangDefLib - это библиотека, которая определяет язык текста без 
+внешних зависимостей, а также поддерживает интеграцию с 
+мощными библиотеками вроде fastText и langdetect.
+
+
+ВОЗМОЖНОСТИ
+-----------------------------------------------------
+
+✓ Работает из коробки - никаких внешних зависимостей
+✓ Поддерживает 5 языков - русский, украинский, белорусский, польский, английский
+✓ Расширяемость - легко добавить новые языки
+✓ Подробная аналитика - получайте детальную информацию о тексте
+✓ Внешние библиотеки - опциональная поддержка fastText и langdetect
+✓ Устойчивость к ошибкам - надежная обработка исключений и логирование
+✓ Простые методы - получение только кода языка без дополнительной информации
+
+
+УСТАНОВКА
+-----------------------------------------------------
+
+# Базовая установка
+pip install -e .
+
+# С поддержкой внешних библиотек
+pip install -e ".[all]"  # все библиотеки
+pip install -e ".[fasttext]"  # только fastText
+
+
+БЫСТРЫЙ СТАРТ
+-----------------------------------------------------
+
+# Простое определение языка - полная информация
+from LangDefLib import detect_language
+result = detect_language("Это пример текста на русском языке")
+print(result['language'])  # "russian"
+
+# Простое определение языка - только код языка
+from LangDefLib import LangDetector
+detector = LangDetector()
+lang = detector.get_language("Это пример текста на русском языке")
+print(lang)  # "russian"
+
+# Использование внешних библиотек (если установлены)
+from LangDefLib import get_language
+lang = get_language("Привет мир", fasttext_model_path="путь/к/модели/lid.176.ftz")
+print(lang)  # "ru"
+
+
+ПОДДЕРЖИВАЕМЫЕ ЯЗЫКИ
+-----------------------------------------------------
+
+Язык        | Код         | Встроенный | fastText | langdetect
+------------|-------------|------------|----------|------------
+Русский     | russian/ru  | ДА         | ДА       | ДА
+Украинский  | ukrainian/uk| ДА         | ДА       | ДА
+Белорусский | belarusian/be| ДА        | ДА       | ДА
+Польский    | polish/pl   | ДА         | ДА       | ДА
+Английский  | english/en  | ДА         | ДА       | ДА
+Другие      | -           | НЕТ        | ДА (176) | ДА (55+)
+
+# Получение списка поддерживаемых языков
+from LangDefLib import get_supported_languages
+languages = get_supported_languages()
+print(f"langdetect поддерживает {len(languages['langdetect'])} языков")
+
+
+ВСТРОЕННЫЙ ДЕТЕКТОР
+=====================================================
+
+ОСНОВНОЕ ИСПОЛЬЗОВАНИЕ
+-----------------------------------------------------
+
+from LangDefLib import LangDetector
+
+# Создание детектора
+detector = LangDetector()
+
+# Определение языка с полной информацией
+result = detector.detect("Це приклад тексту українською мовою")
+print(f"Язык: {result['language']}, уверенность: {result['confidence']:.2f}")
+
+# Определение языка - только код языка
+lang = detector.get_language("Це приклад тексту українською мовою")
+print(f"Язык: {lang}")  # "ukrainian"
+
+# Подробный анализ
+analysis = detector.analyze("This is an example text in English")
+print(f"Язык: {analysis['language']}")
+print(f"Топ языков: {analysis['top_languages']}")
+
+
+РАБОТА С ФАЙЛАМИ
+-----------------------------------------------------
+
+# Определение языка из файла
+result = detector.detect_from_file("путь/к/файлу.txt")
+
+
+ДОБАВЛЕНИЕ СОБСТВЕННОГО ЯЗЫКА
+-----------------------------------------------------
+
+detector.add_language('german', {
+    'unique_letters': ['ä', 'ö', 'ü', 'ß'],
+    'frequent_letters': ['ä', 'ö', 'ü', 'ß'],
+    'word_endings': ['en', 'er', 'ung'],
+    'marker_words': ['und', 'oder', 'aber'],
+    'digrams': ['ch', 'ck', 'ei'],
+    'trigrams': ['sch', 'ein', 'ich'],
+    'alphabet': 'abcdefghijklmnopqrstuvwxyzäöüß'
+})
+
+
+ВНЕШНИЕ БИБЛИОТЕКИ
+=====================================================
+
+УСТАНОВКА
+-----------------------------------------------------
+
+# Установка fastText (рекомендуется fasttext-wheel вместо оригинального fasttext)
+pip install fasttext-wheel
+
+# Установка langdetect
+pip install langdetect
+
+# Скачивание модели fastText (необходимо для fastText)
+wget https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.ftz
+
+
+БЫСТРОЕ ИСПОЛЬЗОВАНИЕ
+-----------------------------------------------------
+
+from LangDefLib import ExternalDetector
+import logging
+
+# Создание детектора (со всеми параметрами)
+detector = ExternalDetector(
+    use_fasttext=True,
+    use_langdetect=True,
+    fasttext_model_path=None,  # автоматический поиск модели
+    fasttext_model_size='small',
+    min_confidence=0.5,  # минимальный порог уверенности
+    log_level=logging.INFO  # уровень логирования
+)
+
+# Определение языка разными методами
+text = "Привет, мир!"
+
+# fastText (самый точный, 176 языков)
+result = detector.detect(text, method='fasttext')
+
+# langdetect (простой и легкий)
+result = detector.detect(text, method='langdetect')
+
+# Голосование всех методов (наиболее надежный результат)
+result = detector.detect(text, method='vote')
+
+# Получение только кода языка
+lang = detector.get_language(text)
+print(f"Язык: {lang}")  # "ru"
+
+
+СРАВНЕНИЕ ВСЕХ МЕТОДОВ
+-----------------------------------------------------
+
+# Получаем результаты всех методов сразу
+results = detector.detect_with_all_methods(text)
+
+# Выбираем лучший метод
+best_lang = results['best']['language']
+best_method = results['best_method']
+
+
+ПОЛУЧЕНИЕ ТОП-N ВЕРОЯТНЫХ ЯЗЫКОВ
+-----------------------------------------------------
+
+# Получаем топ-3 вероятных языка
+top_languages = detector.get_top_languages(text, n=3)
+
+for lang_info in top_languages:
+    print(f"{lang_info['language']} ({lang_info['confidence']:.2f}) - {lang_info['method']}")
+
+
+УПРОЩЕННЫЕ МЕТОДЫ ОПРЕДЕЛЕНИЯ ЯЗЫКА
+-----------------------------------------------------
+
+# Встроенный детектор - получение только кода языка
+from LangDefLib import LangDetector
+detector = LangDetector()
+lang = detector.get_language("Це текст українською мовою")
+# Вернет: "ukrainian"
+
+# Внешний детектор - получение только кода языка
+from LangDefLib import ExternalDetector
+detector = ExternalDetector(fasttext_model_path="путь/к/модели/lid.176.ftz")
+lang = detector.get_language("This is English text")
+# Вернет: "en"
+
+# Вспомогательная функция для быстрого определения языка
+from LangDefLib import get_language
+lang = get_language("Text to analyze")
+# Вернет: "ru"
+
+
+ОБРАБОТКА ОШИБОК И ЛОГИРОВАНИЕ
+-----------------------------------------------------
+
+import logging
+
+# Настройка логирования
+detector = ExternalDetector(log_level=logging.DEBUG)
+
+# Проверка короткого или некорректного текста
+result = detector.detect("")  # Вернет {'language': 'unknown', 'confidence': 0.0}
+
+# Обработка исключений внешних библиотек
+try:
+    result = detector.detect("Текст на неизвестном языке")
+except Exception as e:
+    print(f"Произошла ошибка: {e}")
+    result = {'language': 'unknown', 'confidence': 0.0}
+
+
+КАКОЙ МЕТОД ВЫБРАТЬ?
+-----------------------------------------------------
+
+Метод      | Преимущества               | Недостатки              | Когда использовать
+-----------|----------------------------|--------------------------|------------------
+Встроенный | Не требует зависимостей    | Ограниченные языки      | Когда достаточно 5 языков
+fastText   | Наивысшая точность, 176 яз.| Требует модель          | Для максимальной точности
+langdetect | Легкий и простой           | Менее точный            | Для общего использования
+Голосование| Объединяет все преимущества| Требует все библиотеки  | Для максимальной надежности
+
+
+ЧАСТО ЗАДАВАЕМЫЕ ВОПРОСЫ
+=====================================================
+
+В: Как определить язык короткого текста?
+О: Для коротких текстов рекомендуется использовать голосование методов:
+   
+   result = detector.detect("Привет", method='vote')
+   
+   Или использовать более длинный текст для надежного определения.
+
+
+В: Как добавить поддержку нового языка?
+О: См. раздел "ДОБАВЛЕНИЕ СОБСТВЕННОГО ЯЗЫКА" выше.
+
+
+В: Какой метод самый точный?
+О: fastText обычно обеспечивает наилучшую точность, особенно 
+   для длинных текстов.
+
+
+В: Что делать, если детектор не может определить язык?
+О: Попробуйте:
+   1. Увеличить размер текста (для коротких текстов)
+   2. Использовать метод голосования: method='vote'
+   3. Понизить порог минимальной уверенности: min_confidence=0.3
+   4. Получить все возможные языки: get_top_languages(text)
+
+
+В: Как обрабатывать ошибки библиотек?
+О: Библиотека автоматически обрабатывает ошибки и исключения, возвращая 
+   'unknown' при проблемах. Включите логирование для диагностики:
+   
+   detector = ExternalDetector(log_level=logging.DEBUG)
+
+
+В: Как получить только код языка без дополнительной информации?
+О: Используйте метод get_language() вместо detect():
+
+   # Встроенный детектор
+   lang = detector.get_language("Текст для анализа")
+   
+   # Внешний детектор
+   lang = detector.get_language("Text to analyze")
+   
+   # Вспомогательная функция
+   from LangDefLib import get_language
+   lang = get_language("Text to analyze")
+
+
+ТАБЛИЦА ВОЗВРАЩАЕМЫХ ДАННЫХ
+=====================================================
+
+Метод                   | Возвращаемое значение
+------------------------|--------------------------------
+detect()                | {'language': str, 'confidence': float, 'method': str}
+detect_with_all_methods()| {'fasttext': {...}, 'langdetect': {...}, 'vote': {...}, 'best': {...}, 'best_method': str}
+get_top_languages()     | [{'language': str, 'confidence': float, 'method': str}, ...]
+get_language()          | str (код языка или 'unknown')
+
+
+ЛИЦЕНЗИЯ
+=====================================================
+MIT 
