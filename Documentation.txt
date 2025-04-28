@@ -56,14 +56,14 @@ print(lang)  # "ru"
 ПОДДЕРЖИВАЕМЫЕ ЯЗЫКИ
 -----------------------------------------------------
 
-Язык        | Код         | Встроенный | fastText | langdetect
-------------|-------------|------------|----------|------------
-Русский     | russian/ru  | ДА         | ДА       | ДА
-Украинский  | ukrainian/uk| ДА         | ДА       | ДА
-Белорусский | belarusian/be| ДА        | ДА       | ДА
-Польский    | polish/pl   | ДА         | ДА       | ДА
-Английский  | english/en  | ДА         | ДА       | ДА
-Другие      | -           | НЕТ        | ДА (176) | ДА (55+)
+Язык        | Код          | Встроенный | fastText | langdetect
+------------|--------------|------------|----------|------------
+Русский     | russian/ru   | ДА         | ДА       | ДА
+Украинский  | ukrainian/uk | ДА         | ДА       | ДА
+Белорусский | belarusian/be| ДА         | ДА       | ДА
+Польский    | polish/pl    | ДА         | ДА       | ДА
+Английский  | english/en   | ДА         | ДА       | ДА
+Другие      | -            | НЕТ        | ДА (176) | ДА (55+)
 
 # Получение списка поддерживаемых языков
 from LangDefLib import get_supported_languages
@@ -290,12 +290,12 @@ langdetect | Легкий и простой           | Менее точный 
 ТАБЛИЦА ВОЗВРАЩАЕМЫХ ДАННЫХ
 =====================================================
 
-Метод                   | Возвращаемое значение
-------------------------|--------------------------------
-detect()                | {'language': str, 'confidence': float, 'method': str}
+Метод                    | Возвращаемое значение
+-------------------------|--------------------------------
+detect()                 | {'language': str, 'confidence': float, 'method': str}
 detect_with_all_methods()| {'fasttext': {...}, 'langdetect': {...}, 'vote': {...}, 'best': {...}, 'best_method': str}
-get_top_languages()     | [{'language': str, 'confidence': float, 'method': str}, ...]
-get_language()          | str (код языка или 'unknown')
+get_top_languages()      | [{'language': str, 'confidence': float, 'method': str}, ...]
+get_language()           | str (код языка или 'unknown')
 
 
 ЛИЦЕНЗИЯ
