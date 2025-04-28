@@ -19,21 +19,34 @@ def basic_usage():
     
     # Быстрое определение языка с использованием fastText
     text_ru = "Это пример текста на русском языке. Он содержит особенности русского языка."
-    result = detect_language_external(text_ru, method='fasttext')
-    print(f"fastText: определен язык: {result['language']}, уверенность: {result['confidence']:.2f}")
+    
+    try:
+        result = detect_language_external(text_ru, method='fasttext')
+        print(f"fastText: определен язык: {result.get('language', 'unknown')}, уверенность: {result.get('confidence', 0.0):.2f}")
+    except Exception as e:
+        print(f"fastText: ошибка - {str(e)}")
     
     # Быстрое определение языка с использованием langdetect
-    result = detect_language_external(text_ru, method='langdetect')
-    print(f"langdetect: определен язык: {result['language']}, уверенность: {result['confidence']:.2f}")
+    try:
+        result = detect_language_external(text_ru, method='langdetect')
+        print(f"langdetect: определен язык: {result.get('language', 'unknown')}, уверенность: {result.get('confidence', 0.0):.2f}")
+    except Exception as e:
+        print(f"langdetect: ошибка - {str(e)}")
     
     # Голосование всех методов
-    result = detect_language_external(text_ru, method='vote')
-    print(f"Голосование: определен язык: {result['language']}, "
-          f"уверенность: {result['confidence']:.2f}, голосов: {result.get('votes', '?')}")
+    try:
+        result = detect_language_external(text_ru, method='vote')
+        print(f"Голосование: определен язык: {result.get('language', 'unknown')}, "
+              f"уверенность: {result.get('confidence', 0.0):.2f}, голосов: {result.get('votes', '?')}")
+    except Exception as e:
+        print(f"Голосование: ошибка - {str(e)}")
     
     # Автоматический выбор метода
-    result = detect_language_external(text_ru)
-    print(f"Автоматически: определен язык: {result['language']}, уверенность: {result['confidence']:.2f}")
+    try:
+        result = detect_language_external(text_ru)
+        print(f"Автоматически: определен язык: {result.get('language', 'unknown')}, уверенность: {result.get('confidence', 0.0):.2f}")
+    except Exception as e:
+        print(f"Автоматически: ошибка - {str(e)}")
 
 
 def multilingual_comparison():
@@ -63,27 +76,31 @@ def multilingual_comparison():
     for lang, text in examples.items():
         print(f"\nЯзык: {lang}, текст: {text}")
         
-        # Получаем результаты всех методов
-        results = detector.detect_with_all_methods(text)
-        
-        # Выводим результаты каждого метода
-        if results['fasttext']:
-            print(f"  fastText: {results['fasttext']['language']} "
-                  f"(уверенность: {results['fasttext']['confidence']:.2f})")
-        
-        if results['langdetect']:
-            print(f"  langdetect: {results['langdetect']['language']} "
-                  f"(уверенность: {results['langdetect']['confidence']:.2f})")
-        
-        if results['vote']:
-            votes_info = f", голосов: {results['vote'].get('votes', '?')}/{results['vote'].get('total_votes', '?')}" \
-                if 'votes' in results['vote'] else ""
-            print(f"  Голосование: {results['vote']['language']} "
-                  f"(уверенность: {results['vote']['confidence']:.2f}{votes_info})")
-        
-        # Выводим лучший метод
-        print(f"  Лучший метод: {results['best_method']} -> {results['best']['language']} "
-              f"(уверенность: {results['best']['confidence']:.2f})")
+        try:
+            # Получаем результаты всех методов
+            results = detector.detect_with_all_methods(text)
+            
+            # Выводим результаты каждого метода
+            if results.get('fasttext'):
+                print(f"  fastText: {results['fasttext'].get('language', 'unknown')} "
+                      f"(уверенность: {results['fasttext'].get('confidence', 0.0):.2f})")
+            
+            if results.get('langdetect'):
+                print(f"  langdetect: {results['langdetect'].get('language', 'unknown')} "
+                      f"(уверенность: {results['langdetect'].get('confidence', 0.0):.2f})")
+            
+            if results.get('vote'):
+                votes_info = f", голосов: {results['vote'].get('votes', '?')}/{results['vote'].get('total_votes', '?')}" \
+                    if 'votes' in results['vote'] else ""
+                print(f"  Голосование: {results['vote'].get('language', 'unknown')} "
+                      f"(уверенность: {results['vote'].get('confidence', 0.0):.2f}{votes_info})")
+            
+            # Выводим лучший метод
+            if results.get('best_method') and results.get('best'):
+                print(f"  Лучший метод: {results['best_method']} -> {results['best'].get('language', 'unknown')} "
+                      f"(уверенность: {results['best'].get('confidence', 0.0):.2f})")
+        except Exception as e:
+            print(f"  Ошибка при определении языка: {str(e)}")
 
 
 def short_text_examples():
