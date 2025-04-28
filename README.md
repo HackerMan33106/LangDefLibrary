@@ -191,8 +191,8 @@ MIT
 
 Библиотека также поддерживает интеграцию с внешними библиотеками определения языка:
 
-- **fastText** - высокоточная библиотека от Facebook (поддерживает 176 языков)
-- **langdetect** - простая и легкая библиотека
+* **fastText** - высокоточная библиотека от Facebook (поддерживает 176 языков)
+* **langdetect** - простая и легкая библиотека (поддерживает 55+ языков)
 
 ### Установка с поддержкой внешних библиотек
 
@@ -210,30 +210,59 @@ pip install -e ".[langdetect]"
 pip install -e ".[all]"
 ```
 
+### Настройка пути к модели fastText
+
+Для работы с fastText необходимо указать путь к предварительно обученной модели. Вот пример использования:
+
+```python
+from LangDefLib import ExternalDetector
+
+# Использование детектора с указанием пути к модели
+detector = ExternalDetector(fasttext_model_path = r'D:\All_Python\LangDefLib\model\lid.176.bin')
+
+# Пример использования
+text = "Привет, мир!"
+fasttext_result = detector.detect(text, method='fasttext')
+langdetect_result = detector.detect(text, method='langdetect')
+
+print(f"FastText: {fasttext_result['language']}")
+print(f"LangDetect: {langdetect_result['language']}")
+```
+
+Важные замечания:
+1. Используйте префикс `r` перед строкой пути для Windows, чтобы избежать проблем с обратными слешами
+2. Убедитесь, что файл модели существует по указанному пути
+3. Поддерживаются форматы моделей: `.bin` (большая модель) и `.ftz` (маленькая модель)
+
 ### Использование fastText
 
 fastText требует предварительно обученную модель для определения языка. Доступны две модели:
-- Маленькая (917 КБ): [lid.176.ftz](https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.ftz)
-- Большая (126 МБ): [lid.176.bin](https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin)
 
-Скачайте нужную модель и укажите путь к ней при использовании:
+* Маленькая (917 КБ): lid.176.ftz
+* Большая (126 МБ): lid.176.bin
 
-```bash
-# Скачиваем модель
-wget https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.ftz
-```
+Скачайте нужную модель и укажите путь к ней при создании детектора:
 
 ```python
-from LangDefLib import ExternalDetector, detect_language_external
+# Скачиваем модель
+# wget https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.ftz
+
+from LangDefLib import ExternalDetector, detect_language_external, get_language
+
+# Создание детектора с указанием пути к модели
+detector = ExternalDetector(fasttext_model_path='./lid.176.ftz')
 
 # Быстрое определение языка с помощью fastText
-result = detect_language_external("Это пример текста", method='fasttext')
-print(result)  # {'language': 'ru', 'confidence': 0.92}
+result = detector.detect("Это пример текста", method='fasttext')
+print(result)  # {'language': 'ru', 'confidence': 0.92, 'method': 'fasttext'}
 
-# Использование детектора с указанием пути к модели
-detector = ExternalDetector(fasttext_model_path='./lid.176.ftz')
-result = detector.detect("This is an example text", method='fasttext')
-print(result)  # {'language': 'en', 'confidence': 0.98}
+# Получение только кода языка
+lang = detector.get_language("This is an example text")
+print(lang)  # 'en'
+
+# Использование вспомогательной функции
+lang = get_language("This is an example text", fasttext_model_path='./lid.176.ftz')
+print(lang)  # 'en'
 ```
 
 ### Сравнение методов
@@ -243,40 +272,29 @@ print(result)  # {'language': 'en', 'confidence': 0.98}
 ```python
 from LangDefLib import ExternalDetector
 
-detector = ExternalDetector()
+# Создание детектора с указанием пути к модели
+detector = ExternalDetector(fasttext_model_path='./lid.176.bin')
 text = "Привет, мир!"
 
 # Определение языка с использованием всех методов
 results = detector.detect_with_all_methods(text)
 
 # Результаты всех методов
-print(f"fastText: {results['fasttext']}")
-print(f"langdetect: {results['langdetect']}")
+if 'fasttext' in results:
+    print(f"fastText: {results['fasttext']}")
+if 'langdetect' in results:
+    print(f"langdetect: {results['langdetect']}")
 
 # Лучший метод
 print(f"Лучший метод: {results['best_method']} -> {results['best']['language']}")
-```
 
-### Голосование методов
-
-Для повышения точности можно использовать голосование всех методов:
-
-```python
-from LangDefLib import ExternalDetector
-
-detector = ExternalDetector()
-text = "Привет, мир!"
+# Определение языка с использованием fastText
+result = detector.detect(text, method='fasttext')
+print(f"Язык (fastText): {result['language']}")
+print(f"Уверенность (fastText): {result['confidence']}")
 
 # Определение языка с использованием голосования
-result = detector.detect(text, method='vote')
-print(f"Язык: {result['language']}")
-print(f"Уверенность: {result['confidence']}")
-print(f"Голосов: {result['votes']}/{result['total_votes']}")
-```
-
-### Преимущества разных методов
-
-- **fastText**: наиболее точный метод, поддерживает 176 языков, работает хорошо с текстами среднего и большого размера
-- **langdetect**: простой и легкий метод, не требует дополнительных моделей
-
-Для коротких текстов (1-2 слова) рекомендуется использовать голосование всех методов. 
+vote_result = detector.detect(text, method='vote')
+print(f"Язык (голосование): {vote_result['language']}")
+print(f"Уверенность (голосование): {vote_result['confidence']}")
+``` 
